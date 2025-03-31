@@ -1,34 +1,10 @@
 import pandas as pd
 import os
-from src.data_preprocessing import *
-from src.feature_engineering import engineer_features
-from sklearn.model_selection import train_test_split
+import joblib
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
+from src.data_processing import *
 
-drop_cols = ["TransactionID", "TransactionDT"]
-
-def prepare_data():
-    """
-    Loads, merges, cleans, and applies feature engineering to the training data.
-    Returns the processed DataFrame.
-    """
-    train_trans, train_id, test_trans, test_id = load_raw_data()
-    df_train = merge_data(train_trans, train_id)
-    X_test = merge_data(test_trans, test_id)
-    df_train = engineer_features(df_train)
-    X_test = engineer_features(X_test)
-    df_train = df_train.drop(columns=[c for c in drop_cols if c in df_train.columns])
-    X_test = X_test.drop(columns=[c for c in drop_cols if c in X_test.columns])
-
-    df_train = basic_cleaning(df_train)
-    X_test = basic_cleaning(X_test)
-
-    X_train, X_val, y_train, y_val = split_data(df_train)
-
-    # Correct the column names in X_test to match those in X_train
-    fix = {o:n for o, n in zip(X_test.columns, X_train.columns)}
-    X_test.rename(columns=fix, inplace=True)
-
-    return X_train, X_val, y_train, y_val, X_test
+MODEL_DIR = os.path.abspath("../src/models/saved_models")
 
 def save_processed_data(X_train, X_val, y_train, y_val, X_test):
     """
@@ -54,11 +30,25 @@ def read_processed_data():
     X_test = pd.read_csv(os.path.join(DATA_DIR, "processed/X_test.csv"))
     return X_train, X_val, y_train, y_val, X_test
 
-def split_data(df: pd.DataFrame, target_col: str = "isFraud", test_size: float = 0.2, random_state: int = 42):
+def print_evaluation_metrics(y_true, y_pred):
     """
-    Splits the DataFrame into training and validation sets.
+    Prints evaluation metrics: AUC, accuracy, precision, recall, and F1 score.
     """
-    y = df[target_col]
-    X = df.drop(columns=[target_col])
-    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=test_size, random_state=random_state)
-    return X_train, X_val, y_train, y_val
+    auc = roc_auc_score(y_true, y_pred)
+    accuracy = accuracy_score(y_true, y_pred > 0.5)
+    precision = precision_score(y_true, y_pred > 0.5)
+    recall = recall_score(y_true, y_pred > 0.5)
+    f1 = f1_score(y_true, y_pred > 0.5)
+
+    print(f"AUC: {auc:.4f}")
+    print(f"Accuracy: {accuracy:.4f}")
+    print(f"Precision: {precision:.4f}")
+    print(f"Recall: {recall:.4f}")
+    print(f"F1 Score: {f1:.4f}")
+
+def save_model(model, model_name):
+    """
+    Saves the trained model to a file.
+    """
+    joblib.dump(model, os.path.join(MODEL_DIR, f"{model_name}.joblib"))
+    print(f"Model {model_name} saved to {MODEL_DIR}.")

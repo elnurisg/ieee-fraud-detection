@@ -1,24 +1,13 @@
 # src/models/xgboost.py
-# src/models/xgboost.py
 import xgboost as xgb
-from sklearn.metrics import roc_auc_score
+from src.utils.helpers import print_evaluation_metrics, save_model
+from src.models.config import xgboost_params
 
-def train_xgboost_model(X_train, X_val, y_train, y_val, params=None, num_boost_round=500, early_stopping_rounds=50):
+def train_xgboost_model(X_train, X_val, y_train, y_val, params=xgboost_params, num_boost_round=500, early_stopping_rounds=50):
     """
     Trains an XGBoost model with the given training data and parameters.
     Returns the trained model and the validation AUC.
-    """
-    if params is None:
-        params = {
-            'objective': 'binary:logistic',
-            'eval_metric': 'auc',
-            'learning_rate': 0.05,
-            'max_depth': 6,
-            'subsample': 0.8,
-            'colsample_bytree': 0.8,
-            'seed': 42
-        }
-    
+    """    
     
     # Create DMatrix with enable_categorical=True
     dtrain = xgb.DMatrix(X_train, label=y_train, enable_categorical=True)
@@ -32,10 +21,11 @@ def train_xgboost_model(X_train, X_val, y_train, y_val, params=None, num_boost_r
         y_pred_val = model.predict(dval, ntree_limit=model.best_ntree_limit)
     else:
         y_pred_val = model.predict(dval)  
-          
-    val_auc = roc_auc_score(y_val, y_pred_val)
-    
-    return model, val_auc
+
+    # Calculate evaluation metrics
+    print_evaluation_metrics(y_val, y_pred_val)
+    save_model(model, "xgboost_model")
+    return model
 
 def predict_xgboost(model, X):
     """
