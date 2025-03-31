@@ -1,6 +1,9 @@
 import os
 import json
-import pytest
+
+import pandas as pd
+pd.set_option('future.no_silent_downcasting', True)
+
 from fastapi.testclient import TestClient
 from app.backend.main import app  # Adjust if necessary
 

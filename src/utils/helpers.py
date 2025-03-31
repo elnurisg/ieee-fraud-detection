@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import os
 import joblib
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
@@ -30,8 +31,8 @@ def read_processed_data():
     """
     X_train = pd.read_csv(os.path.join(DATA_DIR, "processed/X_train.csv"))
     X_val = pd.read_csv(os.path.join(DATA_DIR, "processed/X_val.csv"))
-    y_train = pd.read_csv(os.path.join(DATA_DIR, "processed/y_train.csv"))
-    y_val = pd.read_csv(os.path.join(DATA_DIR, "processed/y_val.csv"))
+    y_train = pd.read_csv(os.path.join(DATA_DIR, "processed/y_train.csv"), index_col=0).squeeze()
+    y_val = pd.read_csv(os.path.join(DATA_DIR, "processed/y_val.csv"), index_col=0).squeeze()
     X_test = pd.read_csv(os.path.join(DATA_DIR, "processed/X_test.csv"))
     return X_train, X_val, y_train, y_val, X_test
 
@@ -39,6 +40,7 @@ def print_evaluation_metrics(y_true, y_pred):
     """
     Prints evaluation metrics: AUC, accuracy, precision, recall, and F1 score.
     """
+    y_pred = np.array(y_pred)
     auc = roc_auc_score(y_true, y_pred)
     accuracy = accuracy_score(y_true, y_pred > 0.5)
     precision = precision_score(y_true, y_pred > 0.5)
