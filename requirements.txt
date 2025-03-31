@@ -10,4 +10,4 @@ jupyter
 fastapi
 uvicorn
 requests
-joblib
+joblibstreamlit
