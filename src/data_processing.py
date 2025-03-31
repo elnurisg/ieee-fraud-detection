@@ -1,9 +1,30 @@
 import pandas as pd
 import os
+import json
 from sklearn.model_selection import train_test_split
 from src.feature_engineering import engineer_features
 
-DATA_DIR = os.path.abspath("../data")
+def get_project_root():
+    """
+    Returns the project root directory.
+    If __file__ is available (e.g., running from a module), it uses that;
+    otherwise (e.g., in a notebook), it falls back to os.getcwd().
+    Adjust the number of ".." levels as needed.
+    """
+    try:
+        # When running as a module, __file__ is defined.
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        # Suppose helpers.py is in: <project_root>/src/utils/
+        # Then going up two levels should get you to the project root.
+        return os.path.abspath(os.path.join(base_dir, ".."))
+    except NameError:
+        # __file__ is not defined in a notebook, so use current working directory.
+        return os.getcwd()
+
+PROJECT_ROOT = get_project_root()
+MODEL_DIR = os.path.join(PROJECT_ROOT, "src", "models", "saved_models")
+DATA_DIR = os.path.join(PROJECT_ROOT, "data")
+
 drop_cols = ["TransactionID", "TransactionDT"]
 
 def load_raw_data(data_dir = DATA_DIR):
@@ -55,7 +76,26 @@ def prepare_data(categorical_handling = 'object_to_category'):
     fix = {o:n for o, n in zip(X_test.columns, X_train.columns)}
     X_test.rename(columns=fix, inplace=True)
 
+    # Save the expected columns from training
+    expected_columns = list(X_train.columns)
+    with open(os.path.join(DATA_DIR, 'expected_columns.json'), 'w') as f:
+        json.dump(expected_columns, f)
+
+
     return X_train, X_val, y_train, y_val, X_test
+
+def prepare_data_for_production(df_transaction, df_identity, categorical_handling = 'object_to_category'):
+    """
+    Processes the input data for production use.
+    """
+    df = process_data(df_transaction, df_identity, categorical_handling)
+
+    with open(os.path.join(DATA_DIR, "expected_columns.json"), 'r') as f:
+        expected_columns = json.load(f)
+  
+    df = df.reindex(columns=expected_columns, fill_value=-999)
+
+    return df
 
 def process_data(df_transaction, df_identity, categorical_handling = 'object_to_category'):
     """

@@ -4,7 +4,12 @@ import joblib
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
 from src.data_processing import *
 
-MODEL_DIR = os.path.abspath("../src/models/saved_models")
+
+# Get the project root directory dynamically
+PROJECT_ROOT = get_project_root()
+
+# Build an absolute path to your saved models folder
+MODEL_DIR = os.path.join(PROJECT_ROOT, "src", "models", "saved_models")
 
 def save_processed_data(X_train, X_val, y_train, y_val, X_test):
     """
