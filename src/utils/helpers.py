@@ -52,3 +52,35 @@ def save_model(model, model_name):
     """
     joblib.dump(model, os.path.join(MODEL_DIR, f"{model_name}.joblib"))
     print(f"Model {model_name} saved to {MODEL_DIR}.")
+
+def load_model(model_name):
+    """
+    Loads a trained model from a file.
+    """
+    model_path = os.path.join(MODEL_DIR, f"{model_name}.joblib")
+    if os.path.exists(model_path):
+        model = joblib.load(model_path)
+        print(f"Model {model_name} loaded from {MODEL_DIR}.")
+        return model
+    else:
+        print(f"Model {model_name} not found in {MODEL_DIR}.")
+        return None
+
+def prepare_my_submission(y_pred, model_name, use_threshold=False):
+    sample_submission = pd.read_csv(os.path.join(DATA_DIR, "raw/sample_submission.csv"))
+
+    # If it's probabilities, you can threshold it (e.g., at 0.5):
+    if use_threshold:
+        y_pred = (y_pred > 0.5).astype(int)
+
+    # Assign predictions
+    sample_submission["isFraud"] = y_pred
+
+    # Save to CSV
+    sample_submission.to_csv(DATA_DIR + f"/submission_{model_name}.csv", index=False)
+    # submission = pd.DataFrame({
+    #     "TransactionID": test_df["TransactionID"],
+    #     "isFraud": y_pred
+    # })
+    # submission.to_csv(f"submission_{model_name}.csv", index=False)
+    return sample_submission

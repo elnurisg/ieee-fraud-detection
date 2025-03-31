@@ -39,15 +39,15 @@ def fill_missing_values(df: pd.DataFrame):
     
     return df
 
-def prepare_data():
+def prepare_data(categorical_handling = 'object_to_category'):
     """
     Loads, merges, cleans, and applies feature engineering to the training data.
     Returns the processed DataFrame.
     """
     train_trans, train_id, test_trans, test_id = load_raw_data()
     
-    df_train = process_data(train_trans, train_id)
-    X_test = process_data(test_trans, test_id)
+    df_train = process_data(train_trans, train_id, categorical_handling)
+    X_test = process_data(test_trans, test_id, categorical_handling)
 
     X_train, X_val, y_train, y_val = split_tr_data(df_train)
 
@@ -57,13 +57,13 @@ def prepare_data():
 
     return X_train, X_val, y_train, y_val, X_test
 
-def process_data(df_transaction: pd.DataFrame, df_identity: pd.DataFrame):
+def process_data(df_transaction, df_identity, categorical_handling = 'object_to_category'):
     """
     Processes the data by merging, cleaning, and applying feature engineering.
     Returns the processed DataFrame.
     """
     df = merge_data(df_transaction, df_identity)
-    df = engineer_features(df)
+    df = engineer_features(df, categorical_handling)
     df = df.drop(columns=[c for c in drop_cols if c in df.columns])
     df = fill_missing_values(df)
     return df

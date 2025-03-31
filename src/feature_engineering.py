@@ -79,7 +79,7 @@ def label_encode_categoricals(df):
         df[col] = le.fit_transform(df[col])
     return df
 
-def engineer_features(df: pd.DataFrame):
+def engineer_features(df, categorical_handling = 'object_to_category'):
     """
     Master function that calls all feature engineering functions.
     """
@@ -88,6 +88,10 @@ def engineer_features(df: pd.DataFrame):
     df = process_addresses(df)
     df = process_distances(df)
     df = process_m_flags(df)
-    df = label_encode_categoricals(df)
+
+    if categorical_handling == 'object_to_category':
+        df = convert_object_to_category(df)
+    elif categorical_handling == 'label_encode':
+        df = label_encode_categoricals(df)
     # Additional transformations can be added here.
     return df
