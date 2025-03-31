@@ -23,6 +23,13 @@ model = load_model("xgboost_model")
 def read_root():
     return {"message": "Welcome to the Fraud Detection API. Use POST /predict to get a prediction."}
 
+@app.get("/health")
+def health_check():
+    """
+    Simple health-check endpoint.
+    """
+    return {"status": "ok", "message": "API is healthy!"}
+
 @app.post("/predict")
 def predict(request: PredictionRequest):
     try:
