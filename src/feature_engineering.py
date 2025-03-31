@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import datetime as dt
+from sklearn.preprocessing import LabelEncoder
 
 def transform_transaction_dt(df: pd.DataFrame, ref_date="2017-11-30"):
     """
@@ -71,6 +72,13 @@ def convert_object_to_category(df: pd.DataFrame):
         df[col] = df[col].astype('category')
     return df
 
+def label_encode_categoricals(df):
+    for col in df.select_dtypes(include="object").columns:
+        df[col] = df[col].fillna("missing")
+        le = LabelEncoder()
+        df[col] = le.fit_transform(df[col])
+    return df
+
 def engineer_features(df: pd.DataFrame):
     """
     Master function that calls all feature engineering functions.
@@ -80,6 +88,6 @@ def engineer_features(df: pd.DataFrame):
     df = process_addresses(df)
     df = process_distances(df)
     df = process_m_flags(df)
-    df = convert_object_to_category(df)
+    df = label_encode_categoricals(df)
     # Additional transformations can be added here.
     return df
