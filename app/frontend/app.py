@@ -38,7 +38,7 @@ if submit_button:
         }
         
         # Replace with your API's URL if different (e.g., deployed URL)
-        api_url = "http://localhost:8000/predict"
+        api_url = "/api/predict"
         response = requests.post(api_url, json=payload)
         
         if response.status_code == 200:

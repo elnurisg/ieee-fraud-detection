@@ -13,3 +13,5 @@ requests
 joblib
 streamlit
 pytest
+supervisor
+python-nginx
