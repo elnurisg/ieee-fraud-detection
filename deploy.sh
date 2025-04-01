@@ -1,15 +1,19 @@
 #!/bin/bash
-
-# Exit immediately if a command exits with a non-zero status
 set -e
 
-# Define variables
+# Define your project and region
 PROJECT_ID="ieee-fraud-detection-455423"
-SERVICE_NAME="fraud-detection-api"
 REGION="us-central1"
-IMAGE="gcr.io/$PROJECT_ID/$SERVICE_NAME"
 
-# Step 1: Authenticate with Google Cloud
+# Backend service details
+BACKEND_SERVICE="fraud-detection-backend"
+BACKEND_IMAGE="gcr.io/$PROJECT_ID/$BACKEND_SERVICE"
+
+# Frontend service details
+FRONTEND_SERVICE="fraud-detection-frontend"
+FRONTEND_IMAGE="gcr.io/$PROJECT_ID/$FRONTEND_SERVICE"
+
+# Step 1: Authenticate with Google Cloud and set project
 echo "Authenticating with Google Cloud..."
 gcloud auth login
 gcloud config set project $PROJECT_ID
@@ -19,25 +23,39 @@ echo "Enabling required APIs..."
 gcloud services enable run.googleapis.com
 gcloud services enable artifactregistry.googleapis.com
 
-# Step 3: Build the Docker image
-echo "Building the Docker image..."
-docker build -t $IMAGE .
+# Step 3: Build and deploy the backend service
+echo "Building backend Docker image..."
+docker build -t $BACKEND_IMAGE -f Dockerfile .
 
-# Step 4: Push the Docker image to Google Container Registry
-echo "Pushing the Docker image to Google Container Registry..."
-docker push $IMAGE
+echo "Pushing backend image..."
+docker push $BACKEND_IMAGE
 
-# Step 5: Deploy the application to Google Cloud Run
-echo "Deploying the application to Google Cloud Run..."
-gcloud run deploy $SERVICE_NAME \
-    --image=$IMAGE \
+echo "Deploying backend to Cloud Run..."
+gcloud run deploy $BACKEND_SERVICE \
+    --image=$BACKEND_IMAGE \
     --platform=managed \
     --region=$REGION \
     --allow-unauthenticated \
     --timeout=600
 
-# Step 6: Print the service URL
-echo "Deployment completed successfully!"
-SERVICE_URL=$(gcloud run services describe $SERVICE_NAME --platform managed --region $REGION --format 'value(status.url)')
-echo "Your service is running at: $SERVICE_URL"
+BACKEND_URL=$(gcloud run services describe $BACKEND_SERVICE --platform managed --region $REGION --format 'value(status.url)')
+echo "Backend deployed at: $BACKEND_URL"
 
+# Step 4: Build and deploy the frontend service
+echo "Building frontend Docker image..."
+docker build -t $FRONTEND_IMAGE -f app/frontend/Dockerfile app/frontend
+
+echo "Pushing frontend image..."
+docker push $FRONTEND_IMAGE
+
+echo "Deploying frontend to Cloud Run..."
+gcloud run deploy $FRONTEND_SERVICE \
+    --image=$FRONTEND_IMAGE \
+    --platform=managed \
+    --region=$REGION \
+    --allow-unauthenticated \
+    --set-env-vars API_URL="${BACKEND_URL}/predict" \
+    --timeout=600
+
+FRONTEND_URL=$(gcloud run services describe $FRONTEND_SERVICE --platform managed --region $REGION --format 'value(status.url)')
+echo "Frontend deployed at: $FRONTEND_URL"

@@ -1,0 +1,22 @@
+version: "3.8"
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile  # This is your backend Dockerfile in the repo root
+    ports:
+      - "8080:8080"  # Maps container port 8080 to host port 8080 for backend
+    container_name: backend
+
+  frontend:
+    build:
+      context: ./app/frontend
+      dockerfile: Dockerfile  # Dockerfile in the frontend folder
+    ports:
+      - "8501:8080"  # Maps container port 8080 (Streamlit) to host port 8501
+    environment:
+      # Here we use the Docker Compose service name "backend" so the frontend can reach it.
+      - API_URL=http://backend:8080/predict
+    depends_on:
+      - backend
+    container_name: frontend

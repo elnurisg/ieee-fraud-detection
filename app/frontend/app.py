@@ -1,6 +1,7 @@
 import streamlit as st
 import requests
 import json
+import os
 
 # Title and description
 st.title("Fraud Detection App")
@@ -38,7 +39,8 @@ if submit_button:
         }
         
         # Replace with your API's URL if different (e.g., deployed URL)
-        api_url = "/api/predict"
+        api_url = os.getenv("API_URL", "http://localhost:8080/predict")
+
         response = requests.post(api_url, json=payload)
         
         if response.status_code == 200:
