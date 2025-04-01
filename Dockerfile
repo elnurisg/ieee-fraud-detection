@@ -26,4 +26,4 @@ ENV PYTHONPATH=/app
 EXPOSE 8000
 
 # Run the FastAPI application with uvicorn using proper module notation
-CMD ["uvicorn", "app.backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["streamlit", "run", "app/frontend/app.py", "--server.port", "8080", "--server.address", "0.0.0.0"]
