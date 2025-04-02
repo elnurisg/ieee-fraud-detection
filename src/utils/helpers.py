@@ -4,8 +4,27 @@ import os
 import joblib
 from sklearn.model_selection import KFold
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
-from src.data_processing import *
 
+def get_project_root():
+    """
+    Returns the project root directory.
+    If __file__ is available (e.g., running from a module), it uses that;
+    otherwise (e.g., in a notebook), it falls back to os.getcwd().
+    Adjust the number of ".." levels as needed.
+    """
+    try:
+        # When running as a module, __file__ is defined.
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        # Suppose helpers.py is in: <project_root>/src/utils/
+        # Then going up two levels should get you to the project root.
+        return os.path.abspath(os.path.join(base_dir, "../.."))
+    except NameError:
+        # __file__ is not defined in a notebook, so use current working directory.
+        return os.getcwd()
+
+PROJECT_ROOT = get_project_root()
+MODEL_DIR = os.path.join(PROJECT_ROOT, "src", "models", "saved_models")
+DATA_DIR = os.path.join(PROJECT_ROOT, "data")
 
 # Get the project root directory dynamically
 PROJECT_ROOT = get_project_root()
